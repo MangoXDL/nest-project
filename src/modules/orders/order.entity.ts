@@ -1,6 +1,23 @@
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from '../user/user.entity';
+
+@Entity()
 export class Order {
-  price: number;
-  name: string;
+  @PrimaryGeneratedColumn()
   id: number;
-  userId: number | null;
+
+  @Column()
+  price: number;
+
+  @Column()
+  name: string;
+
+  @Column({ nullable: true })
+  userId: number;
+
+  @ManyToOne(() => User, (user) => user.orders, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  user: User;
 }

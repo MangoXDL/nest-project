@@ -1,24 +1,41 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order-dto';
-import { OrdersRepositry } from './orders.repository';
 import { UpdateOrderDto } from './dto/update-order-dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Order } from './order.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class OrderService {
-  constructor(private readonly ordersRepositry: OrdersRepositry) {}
+  constructor(
+    @InjectRepository(Order)
+    private ordersRepository: Repository<Order>,
+  ) {}
 
-  takeOrders() {
-    return this.ordersRepositry.findAll();
+  async takeOrders() {
+    return await this.ordersRepository.find();
   }
 
-  createOrder(dto: CreateOrderDto) {
-    const order = this.ordersRepositry.create(dto);
+  async createOrder(dto: CreateOrderDto) {
+    const order = this.ordersRepository.create(dto);
 
-    this.ordersRepositry.save(order);
+    try {
+      return await this.ordersRepository.save(order);
+    } catch (error) {
+      if (
+        error.code === 'SQLITE_CONSTRAINT' // SQLite foreign key violation
+      ) {
+        throw new NotFoundException('User does not exist');
+      }
+      throw error;
+    }
   }
 
-  takeOrder(id: number) {
-    let order = this.ordersRepositry.findById(id);
+  async takeOrder(id: number) {
+    let order = await this.ordersRepository.find({
+      where: { id },
+      relations: ['user'],
+    });
 
     if (!order) {
       throw new NotFoundException(`Order with id ${id} not found`);
@@ -27,20 +44,19 @@ export class OrderService {
     return order;
   }
 
-  orderDelete(id: number) {
-    console.log(id, typeof id);
-    const order = this.ordersRepositry.findById(id);
+  async orderDelete(id: number) {
+    const order = await this.ordersRepository.findBy({ id });
 
     if (!order) {
       return { message: 'deleted' };
     }
 
-    this.ordersRepositry.delete(order);
+    await this.ordersRepository.delete({ id });
     return { message: 'deleted' };
   }
 
-  orderUpdate(id: number, dto: CreateOrderDto) {
-    const order = this.ordersRepositry.findById(id);
+  async orderUpdate(id: number, dto: CreateOrderDto) {
+    const order = await this.ordersRepository.findOneBy({ id });
 
     if (!order) {
       throw new NotFoundException(`Order with id ${id} not found`);
@@ -48,11 +64,12 @@ export class OrderService {
 
     Object.assign(order, dto);
 
-    return this.ordersRepositry.update(order);
+    return await this.ordersRepository.update({ id }, order);
   }
 
-  orderPatch(id: number, dto: UpdateOrderDto) {
-    const order = this.ordersRepositry.findById(id);
+  async orderPatch(id: number, dto: UpdateOrderDto) {
+    const order = await this.ordersRepository.findOneBy({ id });
+
     if (!order) {
       throw new NotFoundException(`Order with id ${id} not found`);
     }
@@ -66,6 +83,12 @@ export class OrderService {
       }
     });
 
-    return this.ordersRepositry.update(order);
+    return await this.ordersRepository.update({ id }, order);
+  }
+
+  async takeUserOrders(id: number) {
+    const orders = await this.ordersRepository.findBy({ userId: id });
+
+    return orders;
   }
 }
