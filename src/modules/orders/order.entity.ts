@@ -1,5 +1,12 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  OneToMany,
+} from 'typeorm';
 import { User } from '../user/user.entity';
+import { ProductOrder } from '../product/product-order.entity';
 
 @Entity()
 export class Order {
@@ -20,4 +27,7 @@ export class Order {
     onDelete: 'SET NULL',
   })
   user: User;
+
+  @OneToMany(() => ProductOrder, (productOrder) => productOrder.order)
+  productOrder: ProductOrder;
 }
