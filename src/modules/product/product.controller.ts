@@ -1,4 +1,12 @@
-import { Controller, Body, Post, Get, Delete, Param } from '@nestjs/common';
+import {
+  Controller,
+  Body,
+  Post,
+  Get,
+  Delete,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product-dto';
 // import { CreateProductDto } from './dto/create-product-dto';
@@ -13,7 +21,7 @@ export class ProductController {
   }
 
   @Get('/products')
-  getAllProducts(@Param('page') page: number, @Param('size') size: number) {
+  getAllProducts(@Query('page') page: number, @Query('size') size: number) {
     return this.productService.productGetAll(
       Number(page) || 1,
       Number(size) || 20,
@@ -30,6 +38,36 @@ export class ProductController {
     this.productService.productDelete(Number(id));
     return { message: 'success' };
   }
-}
 
-// HM - finish product creation and get all products endpoints
+  @Post('/product/:productId/order/:orderId')
+  productToOrder(
+    @Param('productId') productId: number,
+    @Param('orderId') orderId: number,
+  ) {
+    return this.productService.oneProductToOrder(
+      Number(productId),
+      Number(orderId),
+    );
+  }
+
+  @Get('products/order/:id')
+  getProductInOrder(@Param('id') id: number) {
+    return this.productService.getProductFromOrder(Number(id));
+  }
+
+  @Delete('/product/:productId/order/:orderId')
+  deleteProductFromOrder(
+    @Param('productId') productId: number,
+    @Param('orderId') orderId: number,
+  ) {
+    return this.productService.removeProductFromOrder(
+      Number(productId),
+      Number(orderId),
+    );
+  }
+
+  @Get('/product-amount/order/:id')
+  getProductAmountInOrder(@Param('id') id: number) {
+    return this.productService.getProductAmountFromOrder(Number(id));
+  }
+}

@@ -7,14 +7,14 @@ export class ProductOrder {
   @ManyToOne(() => Product, { nullable: false, onDelete: 'CASCADE' })
   product: Product;
 
+  @Column()
+  orderId: number;
+
   @ManyToOne(() => Order, (order) => order.productOrder, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   order: Order;
-
-  @Column()
-  orderId: number;
 
   @Column()
   productId: number;

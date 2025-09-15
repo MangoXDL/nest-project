@@ -1,15 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Entity, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './product.entity';
 import { CreateOrderDto } from '../orders/dto/create-order-dto';
-// import { Product } from './product.entity';
-// import { CreateProductDto } from './dto/create-product-dto';
+import { ProductOrder } from './product-order.entity';
 
 @Injectable()
 export class ProductService {
   constructor(
-    @InjectRepository(Product) private productRepositrory: Repository<Product>,
+    @InjectRepository(Product)
+    private productRepositrory: Repository<Product>,
+    @InjectRepository(ProductOrder)
+    private productOrderRepositrory: Repository<ProductOrder>,
   ) {}
 
   async productCreate(dto: CreateOrderDto) {
@@ -35,5 +37,51 @@ export class ProductService {
 
   async productDelete(id: number) {
     await this.productRepositrory.delete({ id });
+  }
+
+  async oneProductToOrder(productId: number, orderId: number) {
+    const productOrder = this.productOrderRepositrory.create({
+      productId,
+      orderId,
+    });
+    return await this.productOrderRepositrory.save(productOrder);
+  }
+
+  async getProductFromOrder(orderId: number) {
+    const productOrders = await this.productOrderRepositrory.find({
+      where: {
+        orderId,
+      },
+      relations: ['product'],
+    });
+
+    const products: Product[] = [];
+    for (const productOrder of productOrders) {
+      products.push(productOrder.product);
+    }
+
+    return products;
+  }
+
+  async removeProductFromOrder(productId: number, orderId: number) {
+    const productOrder = await this.productOrderRepositrory.findOneBy({
+      orderId,
+      productId,
+    });
+
+    if (productOrder) {
+      this.productOrderRepositrory.remove(productOrder);
+    }
+
+    return { message: 'Product removed from order' };
+  }
+
+  async getProductAmountFromOrder(orderId: number) {
+    if (orderId) {
+      return this.productOrderRepositrory.count({
+        where: { orderId },
+      });
+    }
+    return 0;
   }
 }
