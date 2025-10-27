@@ -6,8 +6,11 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
+
+  @Column()
+  password: string;
 
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];

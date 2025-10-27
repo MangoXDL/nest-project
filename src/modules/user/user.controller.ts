@@ -1,12 +1,25 @@
-import { Body, Controller, Post, Get, Delete, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Param,
+  Res,
+  Req,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user-dto';
+import { LoginUserDto } from './dto/login-user-dto';
+import { Response, Request } from 'express';
+import { Public } from 'src/common/auth/public.decorator';
 
 @Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('/user')
+  @Public()
   userCreate(@Body() dto: CreateUserDto) {
     return this.userService.createUser(dto);
   }
@@ -19,13 +32,21 @@ export class UserController {
     return obj;
   }
 
-  @Get('/user/:id')
-  getUserById(@Param('id') id: number) {
-    return this.userService.getUser(Number(id));
+  @Get('/user')
+  getUserById(@Req() req: CustomRequest) {
+    const userId = req.user.userId;
+    return this.userService.getUser(userId);
   }
 
   @Delete('user/:id')
   userDelete(@Param('id') id: number) {
     return this.userService.deleteUser(Number(id));
+  }
+
+  @Post('/user/login')
+  @Public()
+  async userLogin(@Body() dto: LoginUserDto, @Res() res: Response) {
+    await this.userService.loginUser(dto, res);
+    return res.send({ message: 'user logged in' });
   }
 }
