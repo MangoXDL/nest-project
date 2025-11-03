@@ -49,4 +49,10 @@ export class UserController {
     await this.userService.loginUser(dto, res);
     return res.send({ message: 'user logged in' });
   }
+
+  @Post('/user/logout')
+  logoutUser(@Res() res: Response) {
+    res.clearCookie('access_token', { partitioned: true, secure: true });
+    return res.send({ message: 'user logged out' });
+  }
 }
