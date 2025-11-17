@@ -13,6 +13,7 @@ import { CreateUserDto } from './dto/create-user-dto';
 import { LoginUserDto } from './dto/login-user-dto';
 import { Response, Request } from 'express';
 import { Public } from 'src/common/auth/public.decorator';
+import { CustomRequest } from 'src/common/auth/custom.request';
 
 @Controller()
 export class UserController {
@@ -38,9 +39,10 @@ export class UserController {
     return this.userService.getUser(userId);
   }
 
-  @Delete('user/:id')
-  userDelete(@Param('id') id: number) {
-    return this.userService.deleteUser(Number(id));
+  @Delete('user')
+  userDelete(@Req() req: CustomRequest) {
+    const userId = req.user.userId;
+    return this.userService.deleteUser(userId);
   }
 
   @Post('/user/login')

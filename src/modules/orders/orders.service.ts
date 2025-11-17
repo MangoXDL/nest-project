@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order-dto';
 import { UpdateOrderDto } from './dto/update-order-dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,8 +20,8 @@ export class OrderService {
     return await this.ordersRepository.find();
   }
 
-  async createOrder(dto: CreateOrderDto) {
-    const order = this.ordersRepository.create(dto);
+  async createOrder(dto: CreateOrderDto, id: number) {
+    const order = this.ordersRepository.create({ ...dto, userId: id });
 
     try {
       return await this.ordersRepository.save(order);
@@ -55,11 +59,15 @@ export class OrderService {
     return { message: 'deleted' };
   }
 
-  async orderUpdate(id: number, dto: CreateOrderDto) {
+  async orderUpdate(id: number, dto: CreateOrderDto, userId: number) {
     const order = await this.ordersRepository.findOneBy({ id });
 
     if (!order) {
       throw new NotFoundException(`Order with id ${id} not found`);
+    }
+
+    if (userId !== order.userId) {
+      throw new ForbiddenException(`User does not own this order`);
     }
 
     Object.assign(order, dto);
@@ -67,13 +75,16 @@ export class OrderService {
     return await this.ordersRepository.update({ id }, order);
   }
 
-  async orderPatch(id: number, dto: UpdateOrderDto) {
+  async orderPatch(id: number, dto: UpdateOrderDto, userId: number) {
     const order = await this.ordersRepository.findOneBy({ id });
 
     if (!order) {
       throw new NotFoundException(`Order with id ${id} not found`);
     }
 
+    if (userId !== order.userId) {
+      throw new ForbiddenException(`User does not own this order`);
+    }
     // {name: 'new name', price: 100}.keys() => ['name', 'price']
 
     // ['name', 'price'].forEach((key) => {...})

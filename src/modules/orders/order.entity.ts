@@ -14,9 +14,6 @@ export class Order {
   id: number;
 
   @Column()
-  price: number;
-
-  @Column()
   name: string;
 
   @Column({ nullable: true })

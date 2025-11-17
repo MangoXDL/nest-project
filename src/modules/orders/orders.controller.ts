@@ -7,10 +7,12 @@ import {
   Delete,
   Put,
   Patch,
+  Req,
 } from '@nestjs/common';
 import { OrderService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order-dto';
 import { UpdateOrderDto } from './dto/update-order-dto';
+import { CustomRequest } from 'src/common/auth/custom.request';
 
 @Controller('order')
 export class OrderController {
@@ -25,8 +27,9 @@ export class OrderController {
   }
 
   @Post()
-  createOrder(@Body() dto: CreateOrderDto) {
-    return this.orderService.createOrder(dto);
+  createOrder(@Body() dto: CreateOrderDto, @Req() req: CustomRequest) {
+    const userId = req.user.userId;
+    return this.orderService.createOrder(dto, userId);
   }
 
   @Get(':id')
@@ -43,17 +46,30 @@ export class OrderController {
   // @Put
 
   @Put(':id')
-  updateOrder(@Param('id') id: number, @Body() dto: CreateOrderDto) {
-    return this.orderService.orderUpdate(Number(id), dto);
+  updateOrder(
+    @Param('id') id: number,
+    @Body() dto: CreateOrderDto,
+    @Req() req: CustomRequest,
+  ) {
+    const userId = req.user.userId;
+
+    return this.orderService.orderUpdate(Number(id), dto, userId);
   }
 
   @Patch(':id')
-  patchOrder(@Param('id') id: number, @Body() dto: UpdateOrderDto) {
-    return this.orderService.orderPatch(Number(id), dto);
+  patchOrder(
+    @Param('id') id: number,
+    @Body() dto: UpdateOrderDto,
+    @Req() req: CustomRequest,
+  ) {
+    const userId = req.user.userId;
+
+    return this.orderService.orderPatch(Number(id), dto, userId);
   }
 
-  @Get('user/:id')
-  getUserOrders(@Param('id') id: number) {
-    return this.orderService.takeUserOrders(Number(id));
+  @Get('user')
+  getUserOrders(@Req() req: CustomRequest) {
+    const userId = req.user.userId;
+    return this.orderService.takeUserOrders(userId);
   }
 }

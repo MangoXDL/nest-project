@@ -6,9 +6,11 @@ import {
   Delete,
   Param,
   Query,
+  Req,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product-dto';
+import { CustomRequest } from 'src/common/auth/custom.request';
 // import { CreateProductDto } from './dto/create-product-dto';
 
 @Controller()
@@ -43,10 +45,13 @@ export class ProductController {
   productToOrder(
     @Param('productId') productId: number,
     @Param('orderId') orderId: number,
+    @Req() req: CustomRequest,
   ) {
+    const userId = req.user.userId;
     return this.productService.oneProductToOrder(
       Number(productId),
       Number(orderId),
+      userId,
     );
   }
 

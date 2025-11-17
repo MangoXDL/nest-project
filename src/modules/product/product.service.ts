@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './product.entity';
 import { CreateOrderDto } from '../orders/dto/create-order-dto';
 import { ProductOrder } from './product-order.entity';
+import { Order } from '../orders/order.entity';
 
 @Injectable()
 export class ProductService {
@@ -12,6 +13,8 @@ export class ProductService {
     private productRepositrory: Repository<Product>,
     @InjectRepository(ProductOrder)
     private productOrderRepositrory: Repository<ProductOrder>,
+    @InjectRepository(Order)
+    private orderRepository: Repository<Order>,
   ) {}
 
   async productCreate(dto: CreateOrderDto) {
@@ -39,11 +42,15 @@ export class ProductService {
     await this.productRepositrory.delete({ id });
   }
 
-  async oneProductToOrder(productId: number, orderId: number) {
+  // finish userId check
+  async oneProductToOrder(productId: number, orderId: number, userId: number) {
+    const order = this.orderRepository.find({ order: order });
+
     const productOrder = this.productOrderRepositrory.create({
       productId,
       orderId,
     });
+
     return await this.productOrderRepositrory.save(productOrder);
   }
 

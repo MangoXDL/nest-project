@@ -6,9 +6,4 @@ export class UpdateOrderDto {
   @IsString()
   @IsOptional()
   name?: string;
-
-  @ApiProperty({ example: '100' })
-  @IsNumber()
-  @IsOptional()
-  price?: number;
 }
