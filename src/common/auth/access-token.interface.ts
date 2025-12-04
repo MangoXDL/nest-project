@@ -1,5 +1,6 @@
 interface AccesToken {
   userId: number;
+  isAdmin: boolean;
 }
 
 /*

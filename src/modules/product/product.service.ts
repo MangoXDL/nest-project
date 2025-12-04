@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Entity, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './product.entity';
@@ -42,9 +47,18 @@ export class ProductService {
     await this.productRepositrory.delete({ id });
   }
 
-  // finish userId check
   async oneProductToOrder(productId: number, orderId: number, userId: number) {
-    const order = this.orderRepository.find({ order: order });
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException("order doesn't exist");
+    }
+
+    if (userId !== order.userId) {
+      throw new ForbiddenException('user does not own this order');
+    }
 
     const productOrder = this.productOrderRepositrory.create({
       productId,
@@ -54,7 +68,18 @@ export class ProductService {
     return await this.productOrderRepositrory.save(productOrder);
   }
 
-  async getProductFromOrder(orderId: number) {
+  async getProductFromOrder(orderId: number, userId: number) {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+    });
+    if (!order) {
+      throw new NotFoundException("order doesn't exist");
+    }
+
+    if (userId !== order.userId) {
+      throw new ForbiddenException('user does not own this order');
+    }
+
     const productOrders = await this.productOrderRepositrory.find({
       where: {
         orderId,
@@ -70,7 +95,22 @@ export class ProductService {
     return products;
   }
 
-  async removeProductFromOrder(productId: number, orderId: number) {
+  async removeProductFromOrder(
+    productId: number,
+    orderId: number,
+    userId: number,
+  ) {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+    });
+    if (!order) {
+      throw new NotFoundException("order doesn't exist");
+    }
+
+    if (userId !== order.userId) {
+      throw new ForbiddenException('user does not own this order');
+    }
+
     const productOrder = await this.productOrderRepositrory.findOneBy({
       orderId,
       productId,
@@ -83,7 +123,18 @@ export class ProductService {
     return { message: 'Product removed from order' };
   }
 
-  async getProductAmountFromOrder(orderId: number) {
+  async getProductAmountFromOrder(orderId: number, userId: number) {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+    });
+    if (!order) {
+      throw new NotFoundException("order doesn't exist");
+    }
+
+    if (userId !== order.userId) {
+      throw new ForbiddenException('user does not own this order');
+    }
+
     if (orderId) {
       return this.productOrderRepositrory.count({
         where: { orderId },

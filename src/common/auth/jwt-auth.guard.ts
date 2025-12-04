@@ -1,12 +1,16 @@
 import {
   ExecutionContext,
+  ForbiddenException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { IS_PUBLIC_KEY } from './public.decorator';
-import { Observable } from 'rxjs';
+import { NotFoundError, Observable } from 'rxjs';
+import { CustomRequest } from './custom.request';
+import { IS_ADMIN_KEY } from './admin.decorator';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -29,10 +33,20 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest(err: unknown, user: any) {
+  handleRequest(err: unknown, user: any, info: any, context: ExecutionContext) {
     if (err || !user) {
       throw err ?? new UnauthorizedException();
     }
+
+    const isAdminOnly = this.reflector.getAllAndOverride<boolean>(
+      IS_ADMIN_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (!user.isAdmin && isAdminOnly) {
+      throw new ForbiddenException('Only admins have access');
+    }
+
     return user;
   }
 }

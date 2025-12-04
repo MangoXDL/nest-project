@@ -14,6 +14,7 @@ import { LoginUserDto } from './dto/login-user-dto';
 import { Response, Request } from 'express';
 import { Public } from 'src/common/auth/public.decorator';
 import { CustomRequest } from 'src/common/auth/custom.request';
+import { Admin } from 'src/common/auth/admin.decorator';
 
 @Controller()
 export class UserController {
@@ -26,6 +27,7 @@ export class UserController {
   }
 
   @Get('/users')
+  @Admin()
   async userGet() {
     const obj: object = {
       message: await this.userService.getUsers(),

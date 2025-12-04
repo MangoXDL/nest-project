@@ -56,23 +56,28 @@ export class ProductController {
   }
 
   @Get('products/order/:id')
-  getProductInOrder(@Param('id') id: number) {
-    return this.productService.getProductFromOrder(Number(id));
+  getProductInOrder(@Param('id') id: number, @Req() req: CustomRequest) {
+    const userId = req.user.userId;
+    return this.productService.getProductFromOrder(Number(id), userId);
   }
 
   @Delete('/product/:productId/order/:orderId')
   deleteProductFromOrder(
     @Param('productId') productId: number,
     @Param('orderId') orderId: number,
+    @Req() req: CustomRequest,
   ) {
+    const userId = req.user.userId;
     return this.productService.removeProductFromOrder(
       Number(productId),
       Number(orderId),
+      userId,
     );
   }
 
   @Get('/product-amount/order/:id')
-  getProductAmountInOrder(@Param('id') id: number) {
-    return this.productService.getProductAmountFromOrder(Number(id));
+  getProductAmountInOrder(@Param('id') id: number, @Req() req: CustomRequest) {
+    const userId = req.user.userId;
+    return this.productService.getProductAmountFromOrder(Number(id), userId);
   }
 }

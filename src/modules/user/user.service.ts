@@ -58,7 +58,7 @@ export class UserService {
     }
 
     if (await bcrypt.compare(dto.password, user.password)) {
-      const encrypt: AccesToken = { userId: user.id };
+      const encrypt: AccesToken = { userId: user.id, isAdmin: user.isAdmin };
 
       const token = this.jwtService.sign(encrypt, {
         expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION'),

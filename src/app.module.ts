@@ -21,7 +21,7 @@ import { JwtStrategy } from './common/auth/jwt.strategy';
       type: 'sqlite',
       database: 'database.sqlite',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, // For dev only: auto-create DB schema
+      synchronize: false, // For dev only: auto-create DB schema
     }),
 
     OrderModule,
